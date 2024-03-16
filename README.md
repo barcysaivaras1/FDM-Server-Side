@@ -18,3 +18,11 @@ Enter your PostgreSQL database URI in a .env file in the following format:
 ```env
 DATABASE_URI=postgresql+psycopg://user:password@host:port/database_name
 ```
+
+Run the following to start the application:
+
+```
+$ flask run
+```
+
+Use the ```--debug``` flag for debugging mode.
