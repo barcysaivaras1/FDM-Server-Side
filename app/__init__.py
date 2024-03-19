@@ -1,7 +1,8 @@
-from flask import Flask
+from flask import Flask, app
 from config import Config
 from app.extensions import db, login_manager, migrate
 
+GLOB_app = None
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -17,4 +18,11 @@ def create_app(config_class=Config):
     from app import claim
     app.register_blueprint(claim.bp)
 
+    GLOB_app = app
+
+    @GLOB_app.route('/')
+    def index():
+        return 'Hello, World! - yes the server works, and we can serve static text, or HTML files. Meaning we can serve packaged-bundled Client-side stuff, whenever client-side team give us a packaged version of their repository.'
+    
     return app
+#
