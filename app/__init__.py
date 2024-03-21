@@ -18,6 +18,9 @@ def create_app(config_class=Config):
     from app import claim
     app.register_blueprint(claim.bp)
 
+    from app import user
+    app.register_blueprint(user.bp)
+
     GLOB_app = app
 
     @GLOB_app.route('/')
