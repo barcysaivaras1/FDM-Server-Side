@@ -7,7 +7,7 @@ class Receipt(db.Model):
 		primary_key=True, 
 		autoincrement="auto"
 	)
-	claim_id = db.ForeignKey("Claim.id"), 
+	claim_id = db.Column(db.Integer, db.ForeignKey("claim.id")), 
 	title = db.Column(db.String(144))
 	image_uri = db.Column(db.Text)
 
