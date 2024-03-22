@@ -4,10 +4,10 @@ class Receipt(db.Model):
 	__tablename__ = "receipt"
 	id = db.Column(
 		db.Integer, 
-		db.ForeignKey("Claim.id"), 
 		primary_key=True, 
 		autoincrement="auto"
 	)
+	claim_id = db.ForeignKey("Claim.id"), 
 	title = db.Column(db.String(144))
 	image_uri = db.Column(db.Text)
 
