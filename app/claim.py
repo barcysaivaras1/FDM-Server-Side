@@ -1,6 +1,6 @@
-from flask import Blueprint, Response, jsonify
+from flask import Blueprint, jsonify
 from flask_login import current_user, login_required
-from app.models.claim import Claim
+from app.models.claim import Claim, ClaimStatus
 
 bp = Blueprint('claims', __name__, url_prefix='/claims')
 
@@ -8,7 +8,7 @@ bp = Blueprint('claims', __name__, url_prefix='/claims')
 @bp.route('/', methods=["GET"])
 @login_required
 def get_claims():
-    claims = [{'temp': claim.temp} for claim in current_user.claims]
+    claims = [{'id': claim.id, 'temp': claim.temp} for claim in current_user.claims]
     return jsonify({'claims': claims}), 200
 
 
@@ -34,5 +34,13 @@ def review_claim(claim_id):
 @bp.route('/managed-by')
 @login_required
 def get_review_claims():
+    # if user is not a line manager, send error message
     # ...
-    return jsonify({'message': 'successful'}), 200
+
+    claims = []
+    for employee in current_user.managed_employees:
+        claims += employee.claims
+
+    pending_claims = [{'id': claim.id, 'temp': claim.temp} for claim in claims if claim.status == ClaimStatus.PENDING]
+
+    return jsonify({'claims': pending_claims}), 200
