@@ -1,5 +1,7 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, request, jsonify
 from flask_login import current_user, login_required
+
+from app.extensions import db
 from app.models.claim import Claim, ClaimStatus
 
 bp = Blueprint('claims', __name__, url_prefix='/claims')
@@ -23,15 +25,37 @@ def get_claim(claim_id):
     return jsonify({'data': {'id': claim.id, 'temp': claim.temp}}), 200
 
 
-@bp.route('/<claim_id>/review')
+@bp.route('/<claim_id>/review', methods=['PATCH'])
 @login_required
 def review_claim(claim_id):
+    status = request.form['status'].lower()
     claim = Claim.query.filter_by(id=int(claim_id)).first()
-    # ...
-    return jsonify({'message': 'successful'}), 200
+
+    # check if claim belongs to an employee who the user manages
+    found = False
+    for user in current_user.managed_employees:
+        if claim.user_id == user.id:
+            found = True
+            break
+
+    if not found:
+        return jsonify({'error': 'Unauthorised'}), 401
+
+    match status:
+        case "pending":
+            claim.status = ClaimStatus.PENDING
+        case "approved":
+            claim.status = ClaimStatus.APPROVED
+        case "denied":
+            claim.status = ClaimStatus.DENIED
+        case _:
+            return jsonify({'error': 'Invalid claim status'}), 400
+
+    db.session.commit()
+    return jsonify({'message': 'Claim status updated'}), 200
 
 
-@bp.route('/managed-by')
+@bp.route('/managed-by', methods=['GET'])
 @login_required
 def get_review_claims():
     # if user is not a line manager, send error message
