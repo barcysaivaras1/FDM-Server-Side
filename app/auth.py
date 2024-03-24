@@ -1,9 +1,10 @@
 from flask import Blueprint, request, Response, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, login_required, current_user
+from flask_mail import Message
 
 from app.models.user import User
-from app.extensions import db, login_manager
+from app.extensions import db, login_manager, mail
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -24,7 +25,8 @@ def signup():
         return Response("Username already exists.", 200)
 
     new_user = User(username=username, password=generate_password_hash(
-        password), first_name='', last_name='', active=True, role_id=1)
+        password), first_name='', last_name='', active=True, role_id=1,
+        email='')
     db.session.add(new_user)
     db.session.commit()
 
@@ -43,6 +45,17 @@ def login():
 
     login_user(user)
     return Response("Successfully logged in", 200)
+
+
+@bp.route('/request-password-reset', methods=["GET"])
+@login_required
+def request_password_reset():
+    return "200"
+
+    msg = Message('Password reset', recipients=[current_user.email])
+    msg.body = "Here is your password reset link"
+    mail.send(msg)
+    return jsonify({'message': 'Password reset link sent to email'}), 200
 
 
 @bp.route('/change-password', methods=["PUT"])
