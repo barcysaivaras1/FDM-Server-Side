@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from config import Config
 from app.extensions import db, login_manager, migrate, mail
 
@@ -6,6 +7,7 @@ from app.extensions import db, login_manager, migrate, mail
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
+    CORS(app, supports_credentials=True)
 
     db.init_app(app)
     login_manager.init_app(app)
