@@ -10,6 +10,7 @@ class User(db.Model):
     last_name = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(255), nullable=False)
     active = db.Column(db.Boolean(), nullable=False)
+    profile_picture = db.Column(db.String(255), nullable=False)
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'), nullable=False)
     manager_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 

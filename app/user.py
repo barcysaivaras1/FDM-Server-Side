@@ -1,7 +1,7 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, url_for
 from flask_login import login_required, current_user
 
-from app.models.user import User
+from app.models.user import User, Role
 from app.extensions import login_manager
 
 bp = Blueprint('users', __name__, url_prefix='/users')
@@ -16,8 +16,17 @@ def load_user(user_id):
 @login_required
 def get_profile():
     claims = [{'temp': claim.temp} for claim in current_user.claims]
+    profile_picture_file = url_for('static', filename='default.jpg')
+
+    role = Role.query.filter_by(id=current_user.role_id).first()
+    role_name = role.name
+
+    line_manager = User.query.filter_by(id=current_user.manager_id).first()
+    line_manager_name = line_manager.name if line_manager else ""
+
     response_data = dict(username=current_user.username, first_name=current_user.first_name,
-                         last_name=current_user.last_name, claims=claims)
+                         last_name=current_user.last_name, profile_picture=profile_picture_file,
+                         claims=claims, role=role_name, line_manager=line_manager_name)
     return jsonify(response_data), 200
 
 
