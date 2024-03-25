@@ -26,7 +26,7 @@ def signup():
 
     new_user = User(username=username, password=generate_password_hash(
         password), first_name='', last_name='', active=True, role_id=1,
-        email='')
+        email='', profile_picture='default.png')
     db.session.add(new_user)
     db.session.commit()
 
