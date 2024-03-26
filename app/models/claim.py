@@ -17,7 +17,7 @@ class Claim(db.Model):
     status = db.Column(postgresql.ENUM(ClaimStatus))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     receipts = db.relationship("Receipt", backref="claim", lazy=True)
-    amount = db.Column(db.Float, nullable=False)
+    amount = db.Column(db.Numeric(precision=10, scale=2), nullable=False)
     
 
     def __repr__(self):
