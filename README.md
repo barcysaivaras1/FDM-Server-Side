@@ -19,6 +19,13 @@ Enter your PostgreSQL database URI in a .env file in the following format:
 DATABASE_URI=postgresql+psycopg://user:password@host:port/database_name
 ```
 
+Also, enter a mail username and password in the .env file in the following format:
+
+```env
+MAIL_USERNAME=YOUR_EMAIL_ADDRESS
+MAIL_PASSWORD=YOUR_EMAIL_PASSWORD
+```
+
 Run the following to start the application:
 
 ```
