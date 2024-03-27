@@ -7,11 +7,20 @@ from app.models.claim import Claim, ClaimStatus
 bp = Blueprint('claims', __name__, url_prefix='/claims')
 
 
-@bp.route('/', methods=["GET"])
+@bp.route('/', methods=["GET", "POST"])
 @login_required
 def get_claims():
-    claims = [{'id': claim.id, 'temp': claim.temp} for claim in current_user.claims]
-    return jsonify({'claims': claims}), 200
+    if request.method == "GET":
+        claims = [{'id': claim.id, 'title': claim.title, 'amount': claim.amount} for claim in current_user.claims]
+        return jsonify({'claims': claims}), 200
+    else:
+        title = request.form['title']
+        amount = request.form['amount']
+
+        new_claim = Claim(title=title, amount=amount, user_id=current_user.id)
+        db.session.add(new_claim)
+        db.session.commit()
+        return jsonify({'message': 'Claim created successfully'}), 200
 
 
 @bp.route('/<claim_id>', methods=["GET"])
@@ -65,6 +74,6 @@ def get_review_claims():
     for employee in current_user.managed_employees:
         claims += employee.claims
 
-    pending_claims = [{'id': claim.id, 'temp': claim.temp} for claim in claims if claim.status == ClaimStatus.PENDING]
+    pending_claims = [{'id': claim.id, 'title': claim.title, 'amount': claim.amount} for claim in claims if claim.status == ClaimStatus.PENDING]
 
     return jsonify({'claims': pending_claims}), 200
