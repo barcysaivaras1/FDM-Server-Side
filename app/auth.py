@@ -40,7 +40,7 @@ def login():
 
     user = User.query.filter_by(username=username).first()
 
-    if not user or not check_password_hash(user.password, password):
+    if not user or not user.is_active() or user.is_active() or not check_password_hash(user.password, password):
         return Response("Incorrect login details", 401)
 
     login_user(user)
