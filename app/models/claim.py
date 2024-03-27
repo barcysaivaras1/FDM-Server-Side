@@ -31,3 +31,7 @@ class Appeal(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     description = db.Column(db.String(255), nullable=False)
     claim_id = db.Column(db.Integer, db.ForeignKey('claim.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    def __repr__(self):
+        return f"Appeal ID: {self.id}"

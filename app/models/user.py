@@ -15,6 +15,7 @@ class User(db.Model):
     manager_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     claims = db.relationship('Claim', backref='user', lazy=True)
+    appeals = db.relationship('Appeal', backref='user', lazy=True)
     managed_employees = db.relationship('User', lazy=True)
 
     def is_authenticated(self):
