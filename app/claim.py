@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_login import current_user, login_required
 
 from app.extensions import db
-from app.models.claim import Claim, ClaimStatus
+from app.models.claim import Claim, ClaimStatus, Appeal
 
 bp = Blueprint('claims', __name__, url_prefix='/claims')
 
@@ -62,6 +62,24 @@ def review_claim(claim_id):
 
     db.session.commit()
     return jsonify({'message': 'Claim status updated'}), 200
+
+
+@bp.route('/<claim_id>/appeal', methods=['POST'])
+@login_required
+def appeal_claim_decision(claim_id):
+    description = request.form['description']
+    claim = Claim.query.filter_by(id=int(claim_id)).first()
+
+    if claim.status != ClaimStatus.DENIED:
+        return jsonify({'error': 'This claim has not been denied'})
+
+    if claim.appeal is not None:
+        return jsonify({'error': 'An appeal already exists for this claim'}), 409
+
+    new_appeal = Appeal(description=description, claim_id=int(claim_id))
+    db.session.add(new_appeal)
+    db.session.commit()
+    return jsonify({'message': 'Appeal created'}), 201
 
 
 @bp.route('/managed-by', methods=['GET'])

@@ -15,10 +15,19 @@ class Claim(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255))
     status = db.Column(postgresql.ENUM(ClaimStatus))
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    receipts = db.relationship("Receipt", backref="claim", lazy=True)
     amount = db.Column(db.Numeric(precision=10, scale=2), nullable=False)
-    
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    receipts = db.relationship("Receipt", backref="claim", lazy=True)
+    appeal = db.relationship("Appeal", backref="claim", uselist=False)
+
 
     def __repr__(self):
         return f"Claim ID: {self.id}"
+
+
+class Appeal(db.Model):
+    __tablename__ = 'appeal'
+    id = db.Column(db.Integer, primary_key=True)
+    description = db.Column(db.String(255), nullable=False)
+    claim_id = db.Column(db.Integer, db.ForeignKey('claim.id'), nullable=False)
