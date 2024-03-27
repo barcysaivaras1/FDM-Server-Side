@@ -23,6 +23,9 @@ def create_app(config_class=Config):
     from app import user
     app.register_blueprint(user.bp)
 
+    from app import appeal
+    app.register_blueprint(appeal.bp)
+
     @app.route('/')
     def index():
         return ('Hello, World! - yes the server works, and we can serve static text, or HTML files. Meaning we can '

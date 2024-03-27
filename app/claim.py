@@ -76,7 +76,7 @@ def appeal_claim_decision(claim_id):
     if claim.appeal is not None:
         return jsonify({'error': 'An appeal already exists for this claim'}), 409
 
-    new_appeal = Appeal(description=description, claim_id=int(claim_id))
+    new_appeal = Appeal(description=description, claim_id=int(claim_id), user_id=current_user.id)
     db.session.add(new_appeal)
     db.session.commit()
     return jsonify({'message': 'Appeal created'}), 201
