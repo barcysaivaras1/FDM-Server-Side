@@ -44,10 +44,10 @@ def login():
     user = User.query.filter_by(username=username).first()
 
     if not user or not check_password_hash(user.password, password):
-        return Response("Incorrect login details", 401)
+        return jsonify({'error': 'Incorrect login details'}), 401
 
     login_user(user)
-    return Response("Successfully logged in", 200)
+    return jsonify({'error': "Successfully logged in"}), 200
 
 
 @bp.route('/request-password-reset', methods=["GET"])
