@@ -38,6 +38,7 @@ class Role(db.Model):
     __tablename__ = 'role'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(20), unique=True)
+    # Name is format: "First Middle Last", with capital first letters and spaces between.
 
     def __repr__(self):
         return self.name
