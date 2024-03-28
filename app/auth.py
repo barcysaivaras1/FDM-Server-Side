@@ -2,6 +2,7 @@ from flask import Blueprint, request, Response, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_mail import Message
+from flask_cors import cross_origin
 
 from app.models.user import User
 from app.extensions import db, login_manager, mail
@@ -15,6 +16,7 @@ def load_user(user_id):
 
 
 @bp.route('/signup', methods=["POST"])
+@cross_origin()
 def signup():
     username = request.form['username']
     password = request.form['password']
@@ -34,9 +36,12 @@ def signup():
 
 
 @bp.route('/login', methods=["POST"])
+@cross_origin()
 def login():
-    username = request.form['username']
-    password = request.form['password']
+    # username = request.form['username']
+    username = request.form.get('username')
+    # password = request.form['password']
+    password = request.form.get('password')
 
     user = User.query.filter_by(username=username).first()
 
@@ -48,6 +53,7 @@ def login():
 
 
 @bp.route('/request-password-reset', methods=["GET"])
+@cross_origin()
 @login_required
 def request_password_reset():
     return "200"
@@ -59,6 +65,7 @@ def request_password_reset():
 
 
 @bp.route('/change-password', methods=["PUT"])
+@cross_origin()
 @login_required
 def change_password():
     old_password = request.form['old_password']
@@ -76,6 +83,7 @@ def change_password():
 
 
 @bp.route('/logout', methods=["POST"])
+@cross_origin()
 def logout():
     logout_user()
     return Response("Successfully logged out", 200)
