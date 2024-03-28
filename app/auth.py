@@ -1,4 +1,4 @@
-from flask import Blueprint, request, Response, jsonify
+from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_mail import Message
@@ -24,7 +24,7 @@ def signup():
     user = User.query.filter_by(username=username).first()
 
     if user:
-        return Response("Username already exists.", 200)
+        return jsonify({'message': 'Username already exists.'}), 200
 
     new_user = User(username=username, password=generate_password_hash(
         password), first_name='', last_name='', active=True, role_id=1,
@@ -32,11 +32,10 @@ def signup():
     db.session.add(new_user)
     db.session.commit()
 
-    return Response("Successfully signed up", 200)
+    return jsonify({'message': 'Successfully signed up'}), 200
 
 
 @bp.route('/login', methods=["POST", "OPTIONS"])
-@cross_origin()
 def login():
     username = request.json['username']
     password = request.json['password']
@@ -47,7 +46,7 @@ def login():
         return jsonify({'error': 'Incorrect login details'}), 401
 
     login_user(user)
-    return jsonify({'error': "Successfully logged in"}), 200
+    return jsonify({'message': "Successfully logged in"}), 200
 
 
 @bp.route('/request-password-reset', methods=["GET"])
@@ -84,4 +83,4 @@ def change_password():
 @cross_origin()
 def logout():
     logout_user()
-    return Response("Successfully logged out", 200)
+    return jsonify({'message': 'Successfully logged out'}), 200

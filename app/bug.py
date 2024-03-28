@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from flask_login import current_user, login_required
+from flask_login import current_user
 
 from app.extensions import db
 from app.models.bug import Bug
@@ -8,7 +8,6 @@ bp = Blueprint('bugs', __name__, url_prefix='/bugs')
 
 
 @bp.route('/', methods=["GET", "POST"])
-@login_required
 def get_bugs():
     if request.method == 'GET':
         bugs = [{'id': bug.id, 'title': bug.title, 'description': bug.description} for bug in current_user.bugs]
@@ -23,7 +22,6 @@ def get_bugs():
 
 
 @bp.route('/<bug_id>', methods=["GET"])
-@login_required
 def get_appeal(bug_id):
     bug = Bug.query.filter_by(id=int(bug_id)).first()
 

@@ -65,34 +65,31 @@ def review_claim(claim_id):
     return jsonify({'message': 'Claim status updated'}), 200
 
 
-@bp.route('/<claim_id>/appeal', methods=['POST'])
+@bp.route('/<claim_id>/appeal', methods=['POST', 'GET'])
 @login_required
-def appeal_claim_decision(claim_id):
-    description = request.json['description']
-    claim = Claim.query.filter_by(id=int(claim_id)).first()
+def claim_appeal(claim_id):
+    if request.method == 'POST':
+        description = request.json['description']
+        claim = Claim.query.filter_by(id=int(claim_id)).first()
 
-    if claim.status != ClaimStatus.DENIED:
-        return jsonify({'error': 'This claim has not been denied'})
+        if claim.status != ClaimStatus.DENIED:
+            return jsonify({'error': 'This claim has not been denied'})
 
-    if claim.appeal is not None:
-        return jsonify({'error': 'An appeal already exists for this claim'}), 409
+        if claim.appeal is not None:
+            return jsonify({'error': 'An appeal already exists for this claim'}), 409
 
-    new_appeal = Appeal(description=description, claim_id=int(claim_id), user_id=current_user.id)
-    db.session.add(new_appeal)
-    db.session.commit()
-    return jsonify({'message': 'Appeal created'}), 201
+        new_appeal = Appeal(description=description, claim_id=int(claim_id), user_id=current_user.id)
+        db.session.add(new_appeal)
+        db.session.commit()
+        return jsonify({'message': 'Appeal created'}), 201
 
-@bp.route("/<claim_id>/appeal", methods=["GET"])
-@login_required
-@cross_origin()
-def get_appeal(claim_id):
-    appeal = Appeal.query.filter_by(claim_id=claim_id).first()
+    else:
+        appeal = Appeal.query.filter_by(claim_id=claim_id).first()
 
-    if appeal is None:
-        return jsonify({"error": "Appeal not found"}), 404
+        if appeal is None:
+            return jsonify({"error": "Appeal not found"}), 404
 
-    return jsonify({"description": appeal.description}), 200
-#
+        return jsonify({"description": appeal.description}), 200
 
 
 @bp.route('/managed-by', methods=['GET'])
@@ -105,6 +102,7 @@ def get_review_claims():
     for employee in current_user.managed_employees:
         claims += employee.claims
 
-    pending_claims = [{'id': claim.id, 'title': claim.title, 'amount': claim.amount} for claim in claims if claim.status == ClaimStatus.PENDING]
+    pending_claims = [{'id': claim.id, 'title': claim.title, 'amount': claim.amount} for claim in claims if
+                      claim.status == ClaimStatus.PENDING]
 
     return jsonify({'claims': pending_claims}), 200

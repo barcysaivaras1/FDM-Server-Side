@@ -21,7 +21,6 @@ class Claim(db.Model):
     receipts = db.relationship("Receipt", backref="claim", lazy=True)
     appeal = db.relationship("Appeal", backref="claim", uselist=False)
 
-
     def __repr__(self):
         return f"Claim ID: {self.id}"
 
