@@ -7,7 +7,7 @@ from app.extensions import db, login_manager, migrate, mail
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
-    CORS(app, supports_credentials=True, resources={r"/*": {"origins": ["localhost:5173", "127.0.0.1:5173"]}})
+    CORS(app, supports_credentials=True, origins=["http://localhost:5173", "http://127.0.0.1:5173"])
 
     db.init_app(app)
     login_manager.init_app(app)
