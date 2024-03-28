@@ -19,7 +19,7 @@ def default_admin_landing_page():
     pass
 #
 
-@bp.route("/admin-force-reset-password/<user_id>", methods=["POST"])
+@bp.route("/admin-force-reset-password/<int:user_id>", methods=["POST"])
 @login_required
 @cross_origin()
 def admin_force_reset_password(user_id):
@@ -51,7 +51,7 @@ def admin_force_reset_password(user_id):
     """
     Ensure that the user_id provided exists in the system
     """
-    user = User.query.filter_by(id=int(user_id)).first()
+    user = User.query.filter_by(id=user_id).first()
     if not user:
         return jsonify({"error": "User not found"}), 404
     #

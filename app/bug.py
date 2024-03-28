@@ -21,9 +21,9 @@ def get_bugs():
         return jsonify({'message': 'Bug created'}), 201
 
 
-@bp.route('/<bug_id>', methods=["GET"])
+@bp.route('/<int:bug_id>', methods=["GET"])
 def get_appeal(bug_id):
-    bug = Bug.query.filter_by(id=int(bug_id)).first()
+    bug = Bug.query.filter_by(id=bug_id).first()
 
     if bug is None:
         return jsonify({'error': 'Bug not found'})

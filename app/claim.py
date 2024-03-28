@@ -24,10 +24,10 @@ def get_claims():
         return jsonify({'message': 'Claim created successfully'}), 200
 
 
-@bp.route('/<claim_id>', methods=["GET"])
+@bp.route('/<int:claim_id>', methods=["GET"])
 @login_required
 def get_claim(claim_id):
-    claim = Claim.query.filter_by(id=int(claim_id)).first()
+    claim = Claim.query.filter_by(id=claim_id).first()
 
     if claim.user_id != current_user.get_id():
         return jsonify({'error': 'Unauthorised'}), 401
@@ -35,11 +35,11 @@ def get_claim(claim_id):
     return jsonify({'data': {'id': claim.id, 'temp': claim.temp}}), 200
 
 
-@bp.route('/<claim_id>/review', methods=['PATCH'])
+@bp.route('/<int:claim_id>/review', methods=['PATCH'])
 @login_required
 def review_claim(claim_id):
     status = request.json['status'].lower()
-    claim = Claim.query.filter_by(id=int(claim_id)).first()
+    claim = Claim.query.filter_by(id=claim_id).first()
 
     # check if claim belongs to an employee who the user manages
     found = False
@@ -65,12 +65,12 @@ def review_claim(claim_id):
     return jsonify({'message': 'Claim status updated'}), 200
 
 
-@bp.route('/<claim_id>/appeal', methods=['POST', 'GET'])
+@bp.route('/<int:claim_id>/appeal', methods=['POST', 'GET'])
 @login_required
 def claim_appeal(claim_id):
     if request.method == 'POST':
         description = request.json['description']
-        claim = Claim.query.filter_by(id=int(claim_id)).first()
+        claim = Claim.query.filter_by(id=claim_id).first()
 
         if claim.status != ClaimStatus.DENIED:
             return jsonify({'error': 'This claim has not been denied'})

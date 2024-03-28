@@ -43,10 +43,10 @@ def get_profile():
     return jsonify(response_data), 200
 
 
-@bp.route('/<user_id>', methods=["GET"])
+@bp.route('/<int:user_id>', methods=["GET"])
 @login_required
 def get_user(user_id):
-    user = User.query.filter_by(id=int(user_id)).first()
+    user = User.query.filter_by(id=user_id).first()
 
     if not user:
         return jsonify({'error': 'User not found'}), 404
@@ -54,10 +54,10 @@ def get_user(user_id):
     return jsonify({'username': user.username}), 200
 
 
-@bp.route('/<user_id>/deactivate', methods=["PATCH"])
+@bp.route('/<int:user_id>/deactivate', methods=["PATCH"])
 @login_required
 def deactivate_user(user_id):
-    user = User.query.filter_by(id=int(user_id)).first()
+    user = User.query.filter_by(id=user_id).first()
 
     if not user:
         return jsonify({'error': 'User not found'}), 404

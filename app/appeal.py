@@ -13,10 +13,10 @@ def get_appeals():
     return jsonify({'appeals': appeals}), 200
 
 
-@bp.route('/<appeal_id>', methods=["GET"])
+@bp.route('/<int:appeal_id>', methods=["GET"])
 @login_required
 def get_appeal(appeal_id):
-    appeal = Appeal.query.filter_by(id=int(appeal_id)).first()
+    appeal = Appeal.query.filter_by(id=appeal_id).first()
 
     if appeal is None:
         return jsonify({'error': 'Appeal not found'}), 404
