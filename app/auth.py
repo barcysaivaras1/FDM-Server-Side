@@ -35,17 +35,15 @@ def signup():
     return Response("Successfully signed up", 200)
 
 
-@bp.route('/login', methods=["POST"])
+@bp.route('/login', methods=["POST", "OPTIONS"])
 @cross_origin()
 def login():
-    # username = request.form['username']
-    username = request.form.get('username')
-    # password = request.form['password']
-    password = request.form.get('password')
+    username = request.json['username']
+    password = request.json['password']
 
     user = User.query.filter_by(username=username).first()
 
-    if not user or not user.is_active() or user.is_active() or not check_password_hash(user.password, password):
+    if not user or not check_password_hash(user.password, password):
         return Response("Incorrect login details", 401)
 
     login_user(user)
