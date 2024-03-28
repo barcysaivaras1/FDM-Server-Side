@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_login import current_user, login_required
+from flask_cors import cross_origin
 
 from app.extensions import db
 from app.models.claim import Claim, ClaimStatus, Appeal
@@ -37,7 +38,7 @@ def get_claim(claim_id):
 @bp.route('/<claim_id>/review', methods=['PATCH'])
 @login_required
 def review_claim(claim_id):
-    status = request.form['status'].lower()
+    status = request.json['status'].lower()
     claim = Claim.query.filter_by(id=int(claim_id)).first()
 
     # check if claim belongs to an employee who the user manages
@@ -67,7 +68,7 @@ def review_claim(claim_id):
 @bp.route('/<claim_id>/appeal', methods=['POST'])
 @login_required
 def appeal_claim_decision(claim_id):
-    description = request.form['description']
+    description = request.json['description']
     claim = Claim.query.filter_by(id=int(claim_id)).first()
 
     if claim.status != ClaimStatus.DENIED:
@@ -80,6 +81,18 @@ def appeal_claim_decision(claim_id):
     db.session.add(new_appeal)
     db.session.commit()
     return jsonify({'message': 'Appeal created'}), 201
+
+@bp.route("/<claim_id>/appeal", methods=["GET"])
+@login_required
+@cross_origin()
+def get_appeal(claim_id):
+    appeal = Appeal.query.filter_by(claim_id=claim_id).first()
+
+    if appeal is None:
+        return jsonify({"error": "Appeal not found"}), 404
+
+    return jsonify({"description": appeal.description}), 200
+#
 
 
 @bp.route('/managed-by', methods=['GET'])

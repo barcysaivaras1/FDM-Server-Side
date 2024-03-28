@@ -21,7 +21,7 @@ def default_admin_landing_page():
 
 @bp.route("/admin-force-reset-password/<user_id>", methods=["POST"])
 @login_required
-@cross_origin
+@cross_origin()
 def admin_force_reset_password(user_id):
     ## MUST OVERRIDE/RESET PASSWORD ENTRY OF TABLE ROW representing this User
     req_password_plaintext = request.json["password"]
