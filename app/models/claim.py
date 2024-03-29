@@ -5,6 +5,7 @@ from app.models.receipt import Receipt
 
 
 class ClaimStatus(enum.Enum):
+    DRAFT = "Draft"
     PENDING = "Pending"
     APPROVED = "Approved"
     DENIED = "Denied"
