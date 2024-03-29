@@ -4,6 +4,7 @@ from flask_cors import cross_origin
 
 from app.extensions import db
 from app.models.claim import Claim, ClaimStatus, Appeal
+from app.models.user import Role
 
 bp = Blueprint('claims', __name__, url_prefix='/claims')
 
@@ -65,6 +66,43 @@ def review_claim(claim_id):
     return jsonify({'message': 'Claim status updated'}), 200
 
 
+@bp.route('<int:claim_id>/submit', methods=['POST'])
+@login_required
+def submit_claim(claim_id):
+    claim = Claim.query.filter_by(id=claim_id).first()
+
+    if claim is None:
+        return jsonify({'error': 'Claim not found'}), 404
+
+    if claim.user_id != current_user.id:
+        return jsonify({'error': 'Unauthorised'}), 401
+
+    if claim.status != ClaimStatus.DRAFT:
+        return jsonify({'error': 'Claim already submitted'}), 401
+
+    claim.status = ClaimStatus.PENDING
+    db.session.commit()
+    return jsonify({'message': 'Claim submitted'}), 200
+
+
+@bp.route('<int:claim_id>/delete', methods=['POST'])
+@login_required
+def delete_claim(claim_id):
+    claim = Claim.query.filter_by(id=claim_id).first()
+
+    if claim is None:
+        return jsonify({'error': 'Claim not found'}), 404
+
+    if claim.user_id != current_user.id:
+        return jsonify({'error': 'Unauthorised'}), 401
+
+    if claim.status != ClaimStatus.DRAFT:
+        return jsonify({'error': 'Claim cannot be deleted'}), 401
+
+    db.session.delete(claim)
+    return jsonify({'message': 'Claim deleted'}), 200
+
+
 @bp.route('/<int:claim_id>/appeal', methods=['POST', 'GET'])
 @login_required
 def claim_appeal(claim_id):
@@ -95,8 +133,9 @@ def claim_appeal(claim_id):
 @bp.route('/managed-by', methods=['GET'])
 @login_required
 def get_review_claims():
-    # if user is not a line manager, send error message
-    # ...
+    role = Role.query.filter_by(id=current_user.role_id).first()
+    if role.name != "Line Manager":
+        return jsonify({"error": "Unauthorised"}), 401
 
     claims = []
     for employee in current_user.managed_employees:
