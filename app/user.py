@@ -1,10 +1,14 @@
-from flask import Blueprint, jsonify, url_for
+import os
+
+from flask import Blueprint, request, jsonify, url_for, current_app, send_from_directory
 from flask_login import login_required, current_user
+from werkzeug.utils import secure_filename
 
 from app.models.user import User, Role
 from app.extensions import login_manager, db
 
 bp = Blueprint('users', __name__, url_prefix='/users')
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 
 @login_manager.user_loader
@@ -29,7 +33,7 @@ def get_all_users():
 @login_required
 def get_profile():
     claims = [{'title': claim.title, 'amount': claim.amount} for claim in current_user.claims]
-    profile_picture_file = url_for('static', filename=current_user.profile_picture)
+    profile_picture_file = url_for('static', filename='profile-pictures/' + current_user.profile_picture)
 
     role = Role.query.filter_by(id=current_user.role_id).first()
     role_name = role.name
@@ -70,3 +74,35 @@ def deactivate_user(user_id):
     user.active = False
     db.session.commit()
     return jsonify({'message': 'User deactivated'}), 200
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+        filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@bp.route('/change-profile-picture', methods=['POST'])
+@login_required
+def change_profile_picture():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file'})
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'})
+
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+        current_user.profile_picture = filename
+        db.session.commit()
+        return jsonify({'message': 'Profile picture updated'})
+    return "200"
+
+
+@bp.route('/delete-profile-picture', methods=['POST'])
+@login_required
+def delete_profile_picture():
+    current_user.profile_picture = 'default.png'
+    db.session.commit()
+    return jsonify({'message': 'Profile picture deleted'})
