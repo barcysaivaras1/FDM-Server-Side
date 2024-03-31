@@ -1,8 +1,10 @@
+from datetime import timedelta
 from flask import Flask
 from flask_cors import CORS
+from flask_login import current_user
 from config import Config
 from app.extensions import db, login_manager, migrate, mail
-
+from flask import session, g
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -28,6 +30,13 @@ def create_app(config_class=Config):
 
     from app import bug
     app.register_blueprint(bug.bp)
+
+    # @app.before_request
+    # def before_request():
+    #     session.permanent = True
+    #     app.permanent_session_lifetime = timedelta(minutes=1)
+    #     session.modified = True
+    #     g.user = current_user
 
     @app.route('/')
     def index():
