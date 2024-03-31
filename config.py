@@ -1,4 +1,6 @@
 import os
+from datetime import timedelta
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -14,3 +16,6 @@ class Config:
     MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
 
     UPLOAD_FOLDER = 'app/static/profile-pictures'
+
+    # SESSION_PROTECTION = None
+    PERMANENT_SESSION_LIFETIME = timedelta(minutes=60)
