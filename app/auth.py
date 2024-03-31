@@ -1,3 +1,4 @@
+from datetime import timedelta
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, login_required, current_user
@@ -43,7 +44,9 @@ def login():
     if not user or not check_password_hash(user.password, password):
         return jsonify({'error': 'Incorrect login details'}), 401
 
-    login_user(user)
+    one_hour_in_seconds = 60*60
+    login_user(user, duration=timedelta(minutes=60))
+    
     return jsonify({'message': "Successfully logged in"}), 200
 
 
