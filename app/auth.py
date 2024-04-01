@@ -45,7 +45,7 @@ def login():
         return jsonify({'error': 'Incorrect login details'}), 401
 
     one_hour_in_seconds = 60*60
-    login_user(user, duration=timedelta(minutes=60))
+    login_user(user)
     
     return jsonify({'message': "Successfully logged in"}), 200
 
