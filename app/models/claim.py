@@ -18,10 +18,10 @@ class Claim(db.Model):
     title = db.Column(db.String(255), nullable=False)
     description = db.Column(db.TEXT, nullable=True)
     amount = db.Column(db.Numeric(precision=10, scale=2), nullable=False)
-    currency = db.Column(db.String(4))
-    expenseType = db.Column(db.String(255))
-    date = db.Column(db.Date, nullable=False)
-    
+    currency = db.Column(db.String(4), nullable=True)
+    expenseType = db.Column(db.String(255), nullable=True)
+    date = db.Column(db.Date, nullable=True)
+
     status = db.Column(postgresql.ENUM(ClaimStatus))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 

@@ -1,8 +1,8 @@
-"""Add to Claim model attributes description, date, currency, expenseType, etc.
+"""Update claim model with attr description, currency, expenseType, date, etc.
 
-Revision ID: fd94c901b988
+Revision ID: 5089787e16da
 Revises: d9c1f53e972c
-Create Date: 2024-04-01 13:29:09.244569
+Create Date: 2024-04-01 13:43:15.861472
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'fd94c901b988'
+revision = '5089787e16da'
 down_revision = 'd9c1f53e972c'
 branch_labels = None
 depends_on = None
@@ -22,7 +22,7 @@ def upgrade():
         batch_op.add_column(sa.Column('description', sa.TEXT(), nullable=True))
         batch_op.add_column(sa.Column('currency', sa.String(length=4), nullable=True))
         batch_op.add_column(sa.Column('expenseType', sa.String(length=255), nullable=True))
-        batch_op.add_column(sa.Column('date', sa.Date(), nullable=False))
+        batch_op.add_column(sa.Column('date', sa.Date(), nullable=True))
         batch_op.alter_column('title',
                existing_type=sa.VARCHAR(length=255),
                nullable=False)
