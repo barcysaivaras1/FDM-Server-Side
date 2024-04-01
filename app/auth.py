@@ -46,6 +46,7 @@ def login():
 
     one_hour_in_seconds = 60*60
     login_user(user)
+    # current_user.username = user.username
     print(f"User {user.username} logged in.")
     
     return jsonify({'message': "Successfully logged in"}), 200
@@ -80,6 +81,13 @@ def change_password():
 
 
 @bp.route('/logout', methods=["POST"])
+@login_required
 def logout():
+    try:
+        print(f"User {current_user.username} logged out.")
+    except AttributeError:
+        print("Error getting username.")
+    #
+    print("Someone logged out.")
     logout_user()
     return jsonify({'message': 'Successfully logged out'}), 200

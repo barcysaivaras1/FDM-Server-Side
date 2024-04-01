@@ -13,26 +13,67 @@ import base64
 bp = Blueprint('claims', __name__, url_prefix='/claims')
 
 
+def get_information_about_claim(claim_instance):
+    return ({
+        "user_id": claim_instance.user_id,
+        "claim_id": claim_instance.id, 
+        "title": claim_instance.title,
+        "amount": claim_instance.amount,
+        "currency": claim_instance.currency,
+        "expenseType": claim_instance.expenseType,
+        "date": claim_instance.date,
+        "description": claim_instance.description,
+        "status": claim_instance.status,
+        "receipts": [{"id": receipt.id, "title": receipt.title, "image": receipt.image_uri} for receipt in claim_instance.receipts]
+    })
+#
+
+
 @bp.route('/', methods=["GET", "POST"])
 @login_required
 def get_claims():
     print(f"Current user: {current_user} wants to get/post claims.")
     if request.method == "GET":
-        claims = [{'id': claim.id, 'title': claim.title, 'amount': claim.amount} for claim in current_user.claims]
-        return jsonify({'claims': claims}), 200
+        claims = [
+            get_information_about_claim(claim) for claim in current_user.claims
+        ]
+        return jsonify({
+            "user_id": current_user.id,
+            "claims": claims
+        }), 200
     else:
         title = request.json['title']
         amount = request.json['amount']
-        currency = request.json["currency"]
-        expenseType = request.json["type"]
-        date = request.json["date"]
-        description = request.json["description"]
-        imageDataBase64 = request.json["image"]
+        try:
+            currency = request.json["currency"]
+        except KeyError:
+            currency = None
+        #
+        try:
+            expenseType = request.json["type"]
+        except KeyError:
+            expenseType = None
+        #
+        try:
+            date = request.json["date"]
+        except KeyError:
+            date = None
+        #
+        try:
+            description = request.json["description"]
+        except KeyError:
+            description = None
+        #
+        try:
+            imageDataBase64 = request.json["image"]
+        except KeyError:
+            imageDataBase64 = None
+        #
 
         new_claim = Claim(title=title, amount=amount, user_id=current_user.id)
-        the_claim_id = new_claim.id
         db.session.add(new_claim)
         db.session.commit()
+        the_claim_id = new_claim.id
         return jsonify({
             'message': 'Claim created successfully',
             "id": the_claim_id
@@ -41,7 +82,7 @@ def get_claims():
 #
 
 
-@bp.route('/<int:claim_id>', methods=["GET"])
+@bp.route('/<claim_id>', methods=["GET"])
 @login_required
 def get_claim(claim_id):
     claim = Claim.query.filter_by(id=claim_id).first()
@@ -49,7 +90,7 @@ def get_claim(claim_id):
     if claim.user_id != current_user.get_id():
         return jsonify({'error': 'Unauthorised'}), 401
 
-    return jsonify({'data': {'id': claim.id, 'temp': claim.temp}}), 200
+    return jsonify(get_information_about_claim(claim)), 200
 
 
 
