@@ -16,8 +16,13 @@ def get_claims():
         claims = [{'id': claim.id, 'title': claim.title, 'amount': claim.amount} for claim in current_user.claims]
         return jsonify({'claims': claims}), 200
     else:
-        title = request.form['title']
-        amount = request.form['amount']
+        title = request.json['title']
+        amount = request.json['amount']
+        currency = request.json["currency"]
+        expenseType = request.json["type"]
+        date = request.json["date"]
+        description = request.json["description"]
+        imageDataBase64 = request.json["image"]
 
         new_claim = Claim(title=title, amount=amount, user_id=current_user.id)
         db.session.add(new_claim)
