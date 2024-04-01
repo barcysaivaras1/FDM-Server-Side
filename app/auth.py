@@ -46,6 +46,7 @@ def login():
 
     one_hour_in_seconds = 60*60
     login_user(user)
+    print(f"User {user.username} logged in.")
     
     return jsonify({'message': "Successfully logged in"}), 200
 

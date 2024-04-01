@@ -16,6 +16,7 @@ bp = Blueprint('claims', __name__, url_prefix='/claims')
 @bp.route('/', methods=["GET", "POST"])
 @login_required
 def get_claims():
+    print(f"Current user: {current_user} wants to get/post claims.")
     if request.method == "GET":
         claims = [{'id': claim.id, 'title': claim.title, 'amount': claim.amount} for claim in current_user.claims]
         return jsonify({'claims': claims}), 200
