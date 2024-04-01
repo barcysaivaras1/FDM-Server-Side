@@ -20,7 +20,7 @@ def get_information_about_claim(claim_instance):
         "title": claim_instance.title,
         "amount": claim_instance.amount,
         "currency": claim_instance.currency,
-        "expenseType": claim_instance.expenseType,
+        "expenseType": claim_instance.expensetype,
         "date": claim_instance.date,
         "description": claim_instance.description,
         "status": claim_instance.status,
@@ -119,7 +119,7 @@ def edit_claim(claim_id):
     claim.description = description
     claim.amount = amount
     claim.currency = currency
-    claim.expenseType = expenseType
+    claim.expensetype = expenseType
     claim.date = date
 
     db.session.commit()

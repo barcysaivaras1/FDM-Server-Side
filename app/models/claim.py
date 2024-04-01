@@ -19,7 +19,7 @@ class Claim(db.Model):
     description = db.Column(db.TEXT, nullable=True)
     amount = db.Column(db.Numeric(precision=10, scale=2), nullable=False)
     currency = db.Column(db.String(4), nullable=True)
-    expenseType = db.Column(db.String(255), nullable=True)
+    expensetype = db.Column(db.String(255), nullable=True)
     date = db.Column(db.Date, nullable=True)
 
     status = db.Column(postgresql.ENUM(ClaimStatus))
