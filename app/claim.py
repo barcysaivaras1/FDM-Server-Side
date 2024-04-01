@@ -84,10 +84,15 @@ def get_claims():
 #
 
 
-@bp.route('/<claim_id>', methods=["GET"])
+@bp.route('/<int:claim_id>', methods=["GET"])
 @login_required
 def get_claim(claim_id):
+    # claim_id = int(claim_id)
     claim = Claim.query.filter_by(id=claim_id).first()
+
+    if not claim:
+        return jsonify({'error': 'Claim not found'}), 404
+    #
 
     if claim.user_id != current_user.get_id():
         return jsonify({'error': 'Unauthorised'}), 401
@@ -99,6 +104,7 @@ def get_claim(claim_id):
 @bp.route("/<int:claim_id>", methods=["PATCH"])
 @login_required
 def edit_claim(claim_id):
+    # claim_id = int(claim_id)
     title = request.json['title']
     amount = request.json['amount']
     currency = request.json["currency"]
@@ -107,7 +113,6 @@ def edit_claim(claim_id):
     description = request.json["description"]
 
     claim = Claim.query.filter_by(id=claim_id).first()
-
     if claim is None:
         return jsonify({'error': 'Claim not found'}), 404
     #
