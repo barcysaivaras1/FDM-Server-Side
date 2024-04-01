@@ -32,8 +32,8 @@ def get_information_about_claim(claim_instance):
 @bp.route('/', methods=["GET", "POST"])
 @login_required
 def get_claims():
-    print(f"Current user: {current_user} wants to get/post claims.")
     if request.method == "GET":
+        print(f"Current user {current_user} wants to get all claims.")
         claims = [
             get_information_about_claim(claim) for claim in current_user.claims
         ]
@@ -42,6 +42,7 @@ def get_claims():
             "claims": claims
         }), 200
     else:
+        print(f"Current user {current_user} wants to create a new claim.")
         title = request.json['title']
         amount = request.json['amount']
         try:
@@ -74,6 +75,7 @@ def get_claims():
         db.session.add(new_claim)
         db.session.commit()
         the_claim_id = new_claim.id
+        print(f"{current_user} has created: New claim with ID {the_claim_id}.")
         return jsonify({
             'message': 'Claim created successfully',
             "id": the_claim_id
