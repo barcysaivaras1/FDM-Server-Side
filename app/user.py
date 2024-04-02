@@ -7,7 +7,7 @@ from werkzeug.utils import secure_filename
 from app.models.user import User, Role
 from app.extensions import login_manager, db
 
-bp = Blueprint('users', __name__, url_prefix='/users')
+bp = Blueprint('users', __name__, url_prefix='/api/users')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 

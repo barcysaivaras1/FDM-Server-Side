@@ -4,7 +4,7 @@ from flask_login import current_user
 from app.extensions import db
 from app.models.bug import Bug
 
-bp = Blueprint('bugs', __name__, url_prefix='/bugs')
+bp = Blueprint('bugs', __name__, url_prefix='/api/bugs')
 
 
 @bp.route('/', methods=["GET", "POST"])

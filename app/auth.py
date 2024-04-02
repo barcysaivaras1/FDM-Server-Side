@@ -7,7 +7,7 @@ from flask_mail import Message
 from app.models.user import User
 from app.extensions import db, login_manager, mail
 
-bp = Blueprint('auth', __name__, url_prefix='/auth')
+bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
 
 @login_manager.user_loader
