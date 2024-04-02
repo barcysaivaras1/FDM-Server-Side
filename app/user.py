@@ -39,7 +39,7 @@ def get_profile():
     role_name = role.name
 
     line_manager = User.query.filter_by(id=current_user.manager_id).first()
-    line_manager_name = line_manager.name if line_manager else ""
+    line_manager_name = line_manager.username if line_manager else ""
 
     response_data = dict(username=current_user.username, first_name=current_user.first_name,
                          last_name=current_user.last_name, profile_picture=profile_picture_file,
