@@ -16,11 +16,11 @@ class Claim(db.Model):
     __tablename__ = 'claim'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255), nullable=False)
-    description = db.Column(db.TEXT, nullable=True)
+    description = db.Column(db.TEXT, nullable=False)
     amount = db.Column(db.Numeric(precision=10, scale=2), nullable=False)
-    currency = db.Column(db.String(4), nullable=True)
-    expensetype = db.Column(db.String(255), nullable=True)
-    date = db.Column(db.Date, nullable=True)
+    currency = db.Column(db.String(4), nullable=False)
+    expensetype = db.Column(db.String(255), nullable=False)
+    date = db.Column(db.Date, nullable=False)
 
     status = db.Column(postgresql.ENUM(ClaimStatus))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
