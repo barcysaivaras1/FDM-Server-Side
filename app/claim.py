@@ -1,4 +1,4 @@
-from hmac import new
+from datetime import datetime
 from flask import Blueprint, request, jsonify
 from flask_login import current_user, login_required
 from flask_cors import cross_origin
@@ -292,3 +292,112 @@ def get_review_claims():
                       claim.status == ClaimStatus.PENDING]
 
     return jsonify({'claims': pending_claims}), 200
+
+
+"""
+Section: Draft-Claims
+"""
+@bp.route("/drafts", methods=["GET"])
+@login_required
+def get_drafts():
+    drafts = [
+        get_information_about_claim(claim) for claim in current_user.claims if claim.status == ClaimStatus.DRAFT
+    ]
+    return jsonify({
+        "user_id": current_user.id,
+        "drafts": drafts
+    }), 200
+#
+
+@bp.route("/drafts", methods=["POST"])
+@login_required
+def make_draft():
+    attributes_missing = []
+    def get_attribute(attribute_name, alternativeValue=None):
+        if request.json.get(attribute_name) is None:
+            attributes_missing.append(attribute_name)
+        return request.json.get(attribute_name, alternativeValue)
+    #
+
+    title = get_attribute("title")
+    if title is None:
+        # send back error message
+        return jsonify({
+            "error": "Title is required to create a draft-claim."
+        }), 400
+    #
+
+    amount = get_attribute("amount", -1)
+    currency = get_attribute("currency", "ABCD")
+    expensetype = get_attribute("type", "Unknown")
+    current_date = datetime.now()
+    date = get_attribute("date", str(current_date))
+    description = get_attribute("description", "Unknown")
+
+    new_claim = Claim(title=title, description=description, amount=amount, currency=currency,
+                      expensetype=expensetype, date=date, status=ClaimStatus.DRAFT, user_id=current_user.id)
+    db.session.add(new_claim)
+    db.session.commit()
+
+    messageText = "Draft-claim created successfully!"
+    if len(attributes_missing) > 0:
+        messageText += "\n[Warning] You are missing attributes:"
+        messageText += "\n\t- " + "\n\t- ".join(attributes_missing)
+    #
+    return jsonify({
+        "message": messageText,
+        "id": new_claim.id
+    }), 200
+#
+
+@bp.route("/drafts/<int:claim_id>", methods=["PATCH"])
+@login_required
+def edit_draft():
+    def get_attribute(attribute_name, alternativeValue=None):
+        return request.json.get(attribute_name, alternativeValue)
+    #
+
+    claim_id = int(claim_id)
+    title = get_attribute("title")
+    amount = get_attribute("amount")
+    currency = get_attribute("currency")
+    expensetype = get_attribute("type")
+    date = get_attribute("date")
+    description = get_attribute("description")
+
+    claim = Claim.query.filter_by(id=claim_id).first()
+    if claim is None:
+        return jsonify({'error': 'Claim not found'}), 404
+    #
+    if claim.user_id != current_user.id:
+        return jsonify({'error': 'Unauthorised'}), 401
+    #
+
+    oldTitle = None
+    if title is not None:
+        oldTitle = claim.title
+        claim.title = title
+    if description is not None:
+        claim.description = description
+    if amount is not None:
+        claim.amount = amount
+    if currency is not None:
+        claim.currency = currency
+    if expensetype is not None:
+        claim.expensetype = expensetype
+    if date is not None:
+        claim.date = date
+    #
+
+    db.session.commit()
+    altered_title = f"{oldTitle} ➡ {title}" if title is not None else claim.title
+    return jsonify({
+        "message": f"Claim (id: {claim_id}, title: \"{altered_title}\") updated successfully.",
+        "id": claim_id
+    }), 200
+#
+
+
+
+
+# End of File
