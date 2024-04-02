@@ -14,6 +14,17 @@ bp = Blueprint('claims', __name__, url_prefix='/api/claims')
 
 
 def get_information_about_claim(claim_instance):
+    status = ""
+    match claim_instance.status:
+        case ClaimStatus.PENDING:
+            status = "Pending"
+        case ClaimStatus.DRAFT:
+            status = "Draft"
+        case ClaimStatus.APPROVED:
+            status = "Approved"
+        case ClaimStatus.DENIED:
+            status = "Denied"
+
     return ({
         "user_id": claim_instance.user_id,
         "claim_id": claim_instance.id, 
@@ -23,7 +34,7 @@ def get_information_about_claim(claim_instance):
         "expenseType": claim_instance.expensetype,
         "date": claim_instance.date,
         "description": claim_instance.description,
-        "status": claim_instance.status,
+        "status": status,
         "receipts": [{"id": receipt.id, "title": receipt.title, "image": receipt.image_uri} for receipt in claim_instance.receipts]
     })
 #
