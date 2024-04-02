@@ -33,7 +33,6 @@ def get_information_about_claim(claim_instance):
 @login_required
 def get_claims():
     if request.method == "GET":
-        print(f"Current user {current_user} wants to get all claims.")
         claims = [
             get_information_about_claim(claim) for claim in current_user.claims
         ]
@@ -42,46 +41,22 @@ def get_claims():
             "claims": claims
         }), 200
     else:
-        print(f"Current user {current_user} wants to create a new claim.")
         title = request.json['title']
         amount = request.json['amount']
-        try:
-            currency = request.json["currency"]
-        except KeyError:
-            currency = None
-        #
-        try:
-            expenseType = request.json["type"]
-        except KeyError:
-            expenseType = None
-        #
-        try:
-            date = request.json["date"]
-        except KeyError:
-            date = None
-        #
-        try:
-            description = request.json["description"]
-        except KeyError:
-            description = None
-        #
-        try:
-            imageDataBase64 = request.json["image"]
-        except KeyError:
-            imageDataBase64 = None
-        #
+        currency = request.json["currency"]
+        expensetype = request.json["type"]
+        date = request.json["date"]
+        description = request.json["description"]
+        imageDataBase64 = request.json["image"]
 
-        new_claim = Claim(title=title, amount=amount, user_id=current_user.id)
+        new_claim = Claim(title=title, description=description, amount=amount, currency=currency,
+                          expensetype=expensetype, date=date, user_id=current_user.id)
         db.session.add(new_claim)
         db.session.commit()
-        the_claim_id = new_claim.id
-        print(f"{current_user} has created: New claim with ID {the_claim_id}.")
         return jsonify({
             'message': 'Claim created successfully',
-            "id": the_claim_id
+            "id": new_claim.id
         }), 200
-    #
-#
 
 
 @bp.route('/<int:claim_id>', methods=["GET"])

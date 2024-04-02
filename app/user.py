@@ -32,7 +32,7 @@ def get_all_users():
 @bp.route('/profile', methods=["GET"])
 @login_required
 def get_profile():
-    claims = [{'title': claim.title, 'amount': claim.amount} for claim in current_user.claims]
+    claims = [{'title': claim.title, 'amount': claim.amount, 'status': claim.status} for claim in current_user.claims]
     profile_picture_file = url_for('static', filename='profile-pictures/' + current_user.profile_picture)
 
     role = Role.query.filter_by(id=current_user.role_id).first()
