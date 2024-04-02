@@ -50,7 +50,7 @@ def get_claims():
         imageDataBase64 = request.json["image"]
 
         new_claim = Claim(title=title, description=description, amount=amount, currency=currency,
-                          expensetype=expensetype, date=date, user_id=current_user.id)
+                          expensetype=expensetype, date=date, status=ClaimStatus.PENDING, user_id=current_user.id)
         db.session.add(new_claim)
         db.session.commit()
         return jsonify({
