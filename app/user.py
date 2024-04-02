@@ -5,6 +5,7 @@ from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 
 from app.models.user import User, Role
+from app.models.claim import ClaimStatus
 from app.extensions import login_manager, db
 
 bp = Blueprint('users', __name__, url_prefix='/api/users')
@@ -32,7 +33,21 @@ def get_all_users():
 @bp.route('/profile', methods=["GET"])
 @login_required
 def get_profile():
-    claims = [{'title': claim.title, 'amount': claim.amount, 'status': claim.status} for claim in current_user.claims]
+    claims = []
+    for claim in current_user.claims:
+        status = ""
+        match claim.status:
+            case ClaimStatus.PENDING:
+                status = "Pending"
+            case ClaimStatus.DRAFT:
+                status = "Draft"
+            case ClaimStatus.APPROVED:
+                status = "Approved"
+            case ClaimStatus.DENIED:
+                status = "Denied"
+
+        claims.append({'title': claim.title, 'description': claim.description, 'amount': claim.amount, 'status': status})
+
     profile_picture_file = url_for('static', filename='profile-pictures/' + current_user.profile_picture)
 
     role = Role.query.filter_by(id=current_user.role_id).first()
