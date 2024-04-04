@@ -288,7 +288,7 @@ def get_review_claims():
     for employee in current_user.managed_employees:
         claims += employee.claims
 
-    pending_claims = [get_information_about_claim(claim) for claim in claims if claim.status != "Draft"]
+    pending_claims = [get_information_about_claim(claim) for claim in claims if claim.status != ClaimStatus.DRAFT]
 
     return jsonify({'claims': pending_claims}), 200
 
