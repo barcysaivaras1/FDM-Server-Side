@@ -18,7 +18,8 @@ def load_user(user_id):
 @bp.route('/me', methods=['GET'])
 @login_required
 def me():
-    return jsonify({'username': current_user.username}), 200
+    return jsonify({'user': current_user.username, 'role': current_user.role_id}), 200
+
 
 @bp.route('/signup', methods=["POST"])
 def signup():
@@ -54,7 +55,7 @@ def login():
     # current_user.username = user.username
     print(f"User {user.username} logged in.")
     
-    return jsonify({'message': "Successfully logged in"}), 200
+    return jsonify({'message': "Successfully logged in", 'user': user.username, 'role': user.role_id}), 200
 
 
 @bp.route('/request-password-reset', methods=["GET"])
