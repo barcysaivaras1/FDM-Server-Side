@@ -46,7 +46,7 @@ def get_profile():
             case ClaimStatus.DENIED:
                 status = "Denied"
 
-        claims.append({'title': claim.title, 'description': claim.description, 'amount': claim.amount, 'status': status})
+        claims.append({'title': claim.title, 'description': claim.description, 'amount': claim.amount, 'currency': claim.currency, 'status': status})
 
     profile_picture_file = url_for('static', filename='profile-pictures/' + current_user.profile_picture)
 
