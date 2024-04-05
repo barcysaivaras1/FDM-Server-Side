@@ -15,6 +15,11 @@ def load_user(user_id):
     return User.query.get(user_id)
 
 
+@bp.route('/me', methods=['GET'])
+@login_required
+def me():
+    return jsonify({'username': current_user.username}), 200
+
 @bp.route('/signup', methods=["POST"])
 def signup():
     username = request.form['username']
