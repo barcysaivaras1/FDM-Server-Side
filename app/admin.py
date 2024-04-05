@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from app.extensions import db, login_manager
 from app.models.user import User, Role
 
-bp = Blueprint('admin', __name__, url_prefix='/api/admin')
+bp = Blueprint('admin', __name__, url_prefix='/admin')
 
 
 

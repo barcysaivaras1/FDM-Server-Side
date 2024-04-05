@@ -3,7 +3,7 @@ from flask_login import current_user, login_required
 
 from app.models.claim import Appeal
 
-bp = Blueprint('appeals', __name__, url_prefix='/api/appeals')
+bp = Blueprint('appeals', __name__, url_prefix='/appeals')
 
 
 @bp.route('/', methods=["GET"])

@@ -10,7 +10,7 @@ from app.models.receipt import Receipt
 
 import base64
 
-bp = Blueprint('claims', __name__, url_prefix='/api/claims')
+bp = Blueprint('claims', __name__, url_prefix='/claims')
 
 
 def get_information_about_claim(claim_instance):
