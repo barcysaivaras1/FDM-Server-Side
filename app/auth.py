@@ -72,8 +72,11 @@ def request_password_reset():
 @bp.route('/change-password', methods=["PUT"])
 @login_required
 def change_password():
-    old_password = request.form['old_password']
-    new_password = request.form['new_password']
+    old_password = request.json['old_password']
+    new_password = request.json['new_password']
+
+    # temporary, for development
+    new_password = "password"
 
     if not check_password_hash(current_user.password, old_password):
         return jsonify({'error': 'Unauthorised'}), 401
