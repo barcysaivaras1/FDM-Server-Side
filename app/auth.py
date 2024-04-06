@@ -75,14 +75,14 @@ def change_password():
     old_password = request.json['old_password']
     new_password = request.json['new_password']
 
-    # temporary, for development
-    new_password = "password"
-
     if not check_password_hash(current_user.password, old_password):
         return jsonify({'error': 'Unauthorised'}), 401
 
     if check_password_hash(current_user.password, new_password):
         return jsonify({'error': 'New password same as old password'}), 500
+
+    # temporary, for development
+    new_password = "password"
 
     current_user.password = generate_password_hash(new_password)
     db.session.commit()
