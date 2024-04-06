@@ -1,6 +1,6 @@
 import os
 
-from flask import Blueprint, request, jsonify, url_for, current_app, send_from_directory
+from flask import Blueprint, request, jsonify, url_for, current_app
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 
@@ -46,7 +46,8 @@ def get_profile():
             case ClaimStatus.DENIED:
                 status = "Denied"
 
-        claims.append({'title': claim.title, 'description': claim.description, 'amount': claim.amount, 'currency': claim.currency, 'status': status})
+        claims.append({'title': claim.title, 'description': claim.description, 'amount': claim.amount,
+                       'currency': claim.currency, 'status': status})
 
     profile_picture_file = url_for('static', filename='profile-pictures/' + current_user.profile_picture)
 
@@ -54,11 +55,12 @@ def get_profile():
     role_name = role.name
 
     line_manager = User.query.filter_by(id=current_user.manager_id).first()
-    line_manager_name = line_manager.username if line_manager else ""
+    line_manager_name = f"{line_manager.first_name} {line_manager.last_name}" if line_manager else ""
 
     response_data = dict(username=current_user.username, first_name=current_user.first_name,
-                         last_name=current_user.last_name, profile_picture=profile_picture_file,
-                         claims=claims, role=role_name, line_manager=line_manager_name)
+                         last_name=current_user.last_name, email=current_user.email,
+                         profile_picture=profile_picture_file, claims=claims, role=role_name,
+                         line_manager=line_manager_name)
     return jsonify(response_data), 200
 
 
