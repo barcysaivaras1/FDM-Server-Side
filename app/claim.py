@@ -13,6 +13,7 @@ from pathlib import Path
 
 bp = Blueprint('claims', __name__, url_prefix='/claims')
 
+GLOB_FOLDERNAME_RECEIPT_IMAGES = "app/static/receipt-images/"
 
 def get_information_about_claim(claim_instance):
     status = ""
@@ -26,6 +27,20 @@ def get_information_about_claim(claim_instance):
         case ClaimStatus.DENIED:
             status = "Denied"
 
+    receipts_imageContents = {}
+
+    for receipt in claim_instance.receipts:
+        receipt_image_name = receipt.image_uri
+        try:
+            with open(GLOB_FOLDERNAME_RECEIPT_IMAGES + receipt_image_name, "rb") as fh:
+                imageContentsBase64 = base64.b64encode(fh.read()).decode('utf-8')
+                receipts_imageContents[receipt.id] = imageContentsBase64
+            #
+        except Exception as e:
+            print(e)
+        #
+    #
+
     return ({
         "user_id": claim_instance.user_id,
         "claim_id": claim_instance.id, 
@@ -36,7 +51,12 @@ def get_information_about_claim(claim_instance):
         "date": claim_instance.date,
         "description": claim_instance.description,
         "status": status,
-        "receipts": [{"id": receipt.id, "title": receipt.title, "image": receipt.image_uri} for receipt in claim_instance.receipts]
+        "receipts": [
+            {
+                "id": receipt.id, "title": receipt.title, "image": receipt.image_uri, 
+                "imageContentsBase64": receipts_imageContents[receipt.id]
+            } for receipt in claim_instance.receipts
+        ]
     })
 #
 
@@ -69,7 +89,7 @@ def get_claims():
             receipt_image_name = f"claim-{new_claim.id}_receipt-{len(new_claim.receipts) + 1}"
 
             try:
-                output_file = Path("app/static/receipt-images/" + receipt_image_name)
+                output_file = Path(GLOB_FOLDERNAME_RECEIPT_IMAGES + receipt_image_name)
                 output_file.parent.mkdir(exist_ok=True, parents=True)
                 output_file.write_text(imageContentsBase64)
             except Exception as e:
