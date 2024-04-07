@@ -63,6 +63,7 @@ def get_claims():
         new_claim = Claim(title=title, description=description, amount=amount, currency=currency,
                           expensetype=expensetype, date=date, status=ClaimStatus.PENDING, user_id=current_user.id)
         for imageContentsBase64 in multiple_imageDataBase64:
+            print(f"Image: {imageContentsBase64[0:30]} etc...")
             # create a receipt
             receipt_image_name = f"claim-{new_claim.id}_receipt-{len(new_claim.receipts) + 1}"
             try:
