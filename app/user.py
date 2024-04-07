@@ -26,7 +26,8 @@ def get_all_users():
         return jsonify({'error': 'Unauthorised'}), 401
 
     users = User.query.all()
-    users_data = [{'id': user.id, 'username': user.username} for user in users]
+    users_data = [{'id': user.id, 'username': user.username, 'first_name': user.first_name,
+                   'last_name': user.last_name} for user in users]
     return jsonify({'users': users_data}), 200
 
 
