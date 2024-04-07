@@ -351,7 +351,7 @@ def make_draft():
 
 @bp.route("/drafts/<int:claim_id>", methods=["PATCH"])
 @login_required
-def edit_draft():
+def edit_draft(claim_id):
     def get_attribute(attribute_name, alternativeValue=None):
         return request.json.get(attribute_name, alternativeValue)
     #
@@ -398,7 +398,7 @@ def edit_draft():
 
 @bp.route("/drafts/<int:claim_id>", methods=["DELETE"])
 @login_required
-def delete_draft():
+def delete_draft(claim_id):
     print(f"Want to delete a draft, id = {claim_id}")
     claim_id = int(claim_id)
     claim = Claim.query.filter_by(id=claim_id).first()
