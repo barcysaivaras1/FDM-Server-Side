@@ -396,6 +396,28 @@ def edit_draft():
     }), 200
 #
 
+@bp.route("/drafts/<int:claim_id>", methods=["DELETE"])
+@login_required
+def delete_draft():
+    claim_id = int(claim_id)
+    claim = Claim.query.filter_by(id=claim_id).first()
+
+    if claim is None:
+        return jsonify({'error': 'Claim not found'}), 404
+    #
+    if claim.user_id != current_user.id:
+        return jsonify({'error': 'Unauthorised'}), 401
+    #
+    if claim.status != ClaimStatus.DRAFT:
+        return jsonify({'error': 'Claim cannot be deleted'}), 401
+    #
+
+    db.session.delete(claim)
+    return jsonify({
+        "message": "Claim deleted.",
+        "id": claim_id
+    }), 200
+#
 
 
 
