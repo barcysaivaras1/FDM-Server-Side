@@ -83,6 +83,9 @@ def get_claims():
 
         new_claim = Claim(title=title, description=description, amount=amount, currency=currency,
                           expensetype=expensetype, date=date, status=ClaimStatus.PENDING, user_id=current_user.id)
+        db.session.add(new_claim)
+        db.session.commit()
+        
         for imageContentsBase64 in multiple_imageDataBase64:
             print(f"Image: {imageContentsBase64[0:30]} etc...")
             # create a receipt
@@ -108,8 +111,7 @@ def get_claims():
             db.session.add(new_receipt)
             db.session.commit()
         #
-        db.session.add(new_claim)
-        db.session.commit()
+        
         return jsonify({
             'message': 'Claim created successfully',
             "id": new_claim.id
