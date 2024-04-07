@@ -1,7 +1,9 @@
 from datetime import datetime
+import os
 from flask import Blueprint, request, jsonify
 from flask_login import current_user, login_required
 from flask_cors import cross_origin
+from werkzeug.utils import secure_filename
 
 from app.extensions import db
 from app.models.claim import Claim, ClaimStatus, Appeal
@@ -32,9 +34,12 @@ def get_information_about_claim(claim_instance):
     for receipt in claim_instance.receipts:
         receipt_image_name = receipt.image_uri
         try:
-            with open(GLOB_FOLDERNAME_RECEIPT_IMAGES + receipt_image_name, "rb") as fh:
-                imageContentsBase64 = base64.b64encode(fh.read()).decode("ascii")
-                receipts_imageContents[receipt.id] = imageContentsBase64
+            filename, file_extension = os.path.splitext(receipt_image_name)
+            file_extension_withoutDot = file_extension.lstrip(".")
+            data_url_scheme_prepend = f"data:image/{file_extension_withoutDot};base64,"
+            with open(receipt_image_name, "rb") as image_file:
+                imageContentsBase64 = data_url_scheme_prepend + base64.b64encode(image_file.read()).decode("utf-8")
+                receipts_imageContents[receipt.image_uri] = imageContentsBase64
             #
         except Exception as e:
             print(e)
@@ -54,7 +59,7 @@ def get_information_about_claim(claim_instance):
         "receipts": [
             {
                 "id": receipt.id, "title": receipt.title, "image": receipt.image_uri, 
-                "imageContentsBase64": receipts_imageContents[receipt.id] if receipt.id in receipts_imageContents else None
+                "imageContentsBase64": receipts_imageContents[receipt.image_uri] if receipt.image_uri in receipts_imageContents else None
             } for receipt in claim_instance.receipts
         ]
     })
@@ -73,49 +78,85 @@ def get_claims():
             "claims": claims
         }), 200
     else:
-        title = request.json['title']
-        amount = request.json['amount']
-        currency = request.json["currency"]
-        expensetype = request.json["type"]
-        date = request.json["date"]
-        description = request.json["description"]
-        multiple_imageDataBase64 = request.json["images"]
+        """
+        A-Ha Gotcha moment here.
+        For route POST /claims/ specifically, this uses FormData (XMLHttpRequest) instead of JSON
+        Use `request.form` to access the form data.
+        """
+        title = request.form['title']
+        amount = request.form['amount']
+        currency = request.form["currency"]
+        expensetype = request.form["type"]
+        date = request.form["date"]
+        description = request.form["description"]
+        multiple_images = request.files.getlist("images[]")
+
+        if len(multiple_images) == 0:
+            return jsonify({
+                "error": "No images provided."
+            }), 400
+        #
+
+        print(f"Title: {title}")
+        print(f"Amount: {amount}")
+        print(f"Currency: {currency}")
+        print(f"Type: {expensetype}")
+        print(f"Date: {date}")
+        print(f"Description: {description}")
+        print(f"Number of Images: {len(multiple_images)}")
+
+        
 
         new_claim = Claim(title=title, description=description, amount=amount, currency=currency,
                           expensetype=expensetype, date=date, status=ClaimStatus.PENDING, user_id=current_user.id)
         db.session.add(new_claim)
         db.session.commit()
         
-        for imageContentsBase64 in multiple_imageDataBase64:
-            print(f"Image: {imageContentsBase64[0:30]} etc...")
-            # create a receipt
-            receipt_image_name = f"claim-{new_claim.id}_receipt-{len(new_claim.receipts) + 1}"
+        for imageFile in multiple_images:
+            original_filename = secure_filename(imageFile.filename)
+            receipt_filename = f"claim-{new_claim.id}_receipt-{len(new_claim.receipts) + 1}_{original_filename}"
 
-            try:
-                output_file = Path(GLOB_FOLDERNAME_RECEIPT_IMAGES + receipt_image_name)
-                output_file.parent.mkdir(exist_ok=True, parents=True)
-                output_file.write_text("data:image/png;charset=ascii;base64," + imageContentsBase64)
-            except Exception as e:
-                print(e)
+            # check the folder to see if there is a folder named "claim{id}"
+            #  if not exists, create it
+            #  save the image to the folder
+
+            path_claimIdFolder = Path(GLOB_FOLDERNAME_RECEIPT_IMAGES + f"claim-{new_claim.id}")
+            # check this folder exists
+            if not path_claimIdFolder.exists() or not path_claimIdFolder.is_dir():
+                path_claimIdFolder.mkdir()
             #
 
-            # try:
-            #     with open("./static/receipt-images/" + receipt_image_name, "wb") as fh:
-            #         fh.write(base64.decodebytes(imageContentsBase64))
-            #     #
-            # except Exception as e:
-            #     print(e)
-            # #
-            new_receipt = Receipt(title=title, image_uri=receipt_image_name, claim_id=new_claim.id)
+            # save the image to the folder
+            # the below division-operator is a macro on Path instance which joins the string to said Path
+            #  not actually dividing by a string, that'd be stupid.
+            pathToSaveImageFileAt = path_claimIdFolder / receipt_filename
+            try:
+                print(pathToSaveImageFileAt)
+                imageFile.save(pathToSaveImageFileAt)
+                str_pathToSaveImageFileAt = str(pathToSaveImageFileAt)
+                print(f"Image saved at: {str_pathToSaveImageFileAt}")
+            except Exception as e:
+                print(e)
+                continue
+            #
+
+            # return jsonify({
+            #     "message": "[DEV TEST: Create Claim] Received FormData, made folder if not there, and print file path.",
+            #     "id": None
+            # }), 200
+
+            new_receipt = Receipt(title=title, image_uri=str_pathToSaveImageFileAt, claim_id=new_claim.id)
             new_claim.receipts.append(new_receipt)
             db.session.add(new_receipt)
             db.session.commit()
         #
         
         return jsonify({
-            'message': 'Claim created successfully',
+            "message": "Claim created successfully",
             "id": new_claim.id
         }), 200
+    #
+#
 
 
 @bp.route('/<int:claim_id>', methods=["GET"])
