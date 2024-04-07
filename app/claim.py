@@ -399,6 +399,7 @@ def edit_draft():
 @bp.route("/drafts/<int:claim_id>", methods=["DELETE"])
 @login_required
 def delete_draft():
+    print(f"Want to delete a draft, id = {claim_id}")
     claim_id = int(claim_id)
     claim = Claim.query.filter_by(id=claim_id).first()
 
