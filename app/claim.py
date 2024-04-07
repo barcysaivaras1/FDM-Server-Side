@@ -414,6 +414,7 @@ def delete_draft(claim_id):
     #
 
     db.session.delete(claim)
+    db.session.commit()
     return jsonify({
         "message": "Claim deleted.",
         "id": claim_id
