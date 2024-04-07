@@ -69,7 +69,7 @@ def get_claims():
             receipt_image_name = f"claim-{new_claim.id}_receipt-{len(new_claim.receipts) + 1}"
 
             try:
-                output_file = Path("./static/receipt-images/" + receipt_image_name)
+                output_file = Path("app/static/receipt-images/" + receipt_image_name)
                 output_file.parent.mkdir(exist_ok=True, parents=True)
                 output_file.write_text(imageContentsBase64)
             except Exception as e:
@@ -84,7 +84,9 @@ def get_claims():
             #     print(e)
             # #
             new_receipt = Receipt(title=title, image_uri=receipt_image_name, claim_id=new_claim.id)
+            new_claim.receipts.append(new_receipt)
             db.session.add(new_receipt)
+            db.session.commit()
         #
         db.session.add(new_claim)
         db.session.commit()
