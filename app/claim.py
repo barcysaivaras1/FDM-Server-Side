@@ -33,7 +33,7 @@ def get_information_about_claim(claim_instance):
         receipt_image_name = receipt.image_uri
         try:
             with open(GLOB_FOLDERNAME_RECEIPT_IMAGES + receipt_image_name, "rb") as fh:
-                imageContentsBase64 = base64.b64encode(fh.read()).decode("ascii")
+                imageContentsBase64 = "data:image/png;charset=ascii;base64," + base64.b64encode(fh.read()).decode("ascii")
                 receipts_imageContents[receipt.id] = imageContentsBase64
             #
         except Exception as e:
