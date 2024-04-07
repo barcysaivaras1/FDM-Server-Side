@@ -58,10 +58,23 @@ def get_claims():
         expensetype = request.json["type"]
         date = request.json["date"]
         description = request.json["description"]
-        imageDataBase64 = request.json["image"]
+        multiple_imageDataBase64 = request.json["images"]
 
         new_claim = Claim(title=title, description=description, amount=amount, currency=currency,
                           expensetype=expensetype, date=date, status=ClaimStatus.PENDING, user_id=current_user.id)
+        for imageContentsBase64 in multiple_imageDataBase64:
+            # create a receipt
+            receipt_image_name = f"claim-{new_claim.id}_receipt-{len(new_claim.receipts) + 1}"
+            try:
+                with open("./static/receipt-images/" + receipt_image_name, "wb") as fh:
+                    fh.write(base64.decodebytes(imageContentsBase64))
+                #
+            except Exception as e:
+                print(e)
+            #
+            new_receipt = Receipt(title=title, image_uri=receipt_image_name, claim_id=new_claim.id)
+            db.session.add(new_receipt)
+        #
         db.session.add(new_claim)
         db.session.commit()
         return jsonify({
