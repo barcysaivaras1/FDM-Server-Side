@@ -9,6 +9,7 @@ from app.models.user import Role
 from app.models.receipt import Receipt
 
 import base64
+from pathlib import Path
 
 bp = Blueprint('claims', __name__, url_prefix='/claims')
 
@@ -66,13 +67,22 @@ def get_claims():
             print(f"Image: {imageContentsBase64[0:30]} etc...")
             # create a receipt
             receipt_image_name = f"claim-{new_claim.id}_receipt-{len(new_claim.receipts) + 1}"
+
             try:
-                with open("./static/receipt-images/" + receipt_image_name, "wb") as fh:
-                    fh.write(base64.decodebytes(imageContentsBase64))
-                #
+                output_file = Path("./static/receipt-images/" + receipt_image_name)
+                output_file.parent.mkdir(exist_ok=True, parents=True)
+                output_file.write_text(imageContentsBase64)
             except Exception as e:
                 print(e)
             #
+
+            # try:
+            #     with open("./static/receipt-images/" + receipt_image_name, "wb") as fh:
+            #         fh.write(base64.decodebytes(imageContentsBase64))
+            #     #
+            # except Exception as e:
+            #     print(e)
+            # #
             new_receipt = Receipt(title=title, image_uri=receipt_image_name, claim_id=new_claim.id)
             db.session.add(new_receipt)
         #
