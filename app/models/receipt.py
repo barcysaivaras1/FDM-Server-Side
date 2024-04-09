@@ -11,6 +11,7 @@ class Receipt(db.Model):
     title = db.Column(db.String(144))
     image_uri = db.Column(db.Text)
     claim_id = db.Column(db.Integer, db.ForeignKey("claim.id"))
+    imageFileName = db.Column(db.String(144))
 
     def __repr__(self):
         return f"Receipt ID: {self.id}"
