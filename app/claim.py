@@ -423,7 +423,7 @@ def get_drafts():
 def make_draft():
     attributes_missing = []
     def get_attribute(attribute_name, alternativeValue=None):
-        if request.form.get(attribute_name) is None:
+        if request.form.get(attribute_name) is None or request.form.get(attribute_name) == "null":
             attributes_missing.append(attribute_name)
         return request.form.get(attribute_name, alternativeValue)
     #
@@ -439,7 +439,11 @@ def make_draft():
     amount = get_attribute("amount", None)
     currency = get_attribute("currency", None)
     expensetype = get_attribute("type", None)
-    date = get_attribute("date", None)
+    current_date = datetime.now()
+    date = get_attribute("date", str(current_date))
+    if date == "null":
+        date = str(current_date)
+    #
     description = get_attribute("description", None)
     multiple_images = request.files.getlist("images[]")
 
@@ -469,8 +473,11 @@ def make_draft():
 @bp.route("/drafts/<int:claim_id>", methods=["PATCH"])
 @login_required
 def edit_draft(claim_id):
+    attributes_missing = []
     def get_attribute(attribute_name, alternativeValue=None):
-        return request.json.get(attribute_name, alternativeValue)
+        if request.form.get(attribute_name) is None or request.form.get(attribute_name) == "null":
+            attributes_missing.append(attribute_name)
+        return request.form.get(attribute_name, alternativeValue)
     #
 
     claim_id = int(claim_id)
@@ -493,17 +500,29 @@ def edit_draft(claim_id):
     if title is not None:
         oldTitle = claim.title
         claim.title = title
-    if description is not None:
-        claim.description = description
-    if amount is not None:
-        claim.amount = amount
-    if currency is not None:
-        claim.currency = currency
-    if expensetype is not None:
-        claim.expensetype = expensetype
-    if date is not None:
+    #
+    claim.description = description
+    claim.amount = amount
+    claim.currency = currency
+    claim.expensetype = expensetype
+    current_date = datetime.now()
+    if date is None:
+        claim.date = str(current_date)
+    else:
         claim.date = date
     #
+
+    # if description is not None:
+    #     claim.description = description
+    # if amount is not None:
+    #     claim.amount = amount
+    # if currency is not None:
+    #     claim.currency = currency
+    # if expensetype is not None:
+    #     claim.expensetype = expensetype
+    # if date is not None:
+    #     claim.date = date
+    # #
 
     db.session.commit()
     altered_title = f"{oldTitle} ➡ {title}" if title is not None else claim.title
