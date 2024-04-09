@@ -111,7 +111,12 @@ def save_imageFiles_for_claim(multiple_images, claimInstance: Claim):
         #     "id": None
         # }), 200
 
-        new_receipt = Receipt(title=claimInstance.title, image_uri=str_pathToSaveImageFileAt, claim_id=claimInstance.id)
+        new_receipt = Receipt(
+            title=claimInstance.title, 
+            image_uri=str_pathToSaveImageFileAt, 
+            claim_id=claimInstance.id,
+            imageFileName=original_filename
+        )
         claimInstance.receipts.append(new_receipt)
         db.session.add(new_receipt)
         db.session.commit()
