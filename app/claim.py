@@ -59,6 +59,7 @@ def get_information_about_claim(claim_instance):
         "receipts": [
             {
                 "id": receipt.id, "title": receipt.title, "image": receipt.image_uri, 
+                "imageFileName": receipt.imageFileName,
                 "imageContentsBase64": receipts_imageContents[receipt.image_uri] if receipt.image_uri in receipts_imageContents else None
             } for receipt in claim_instance.receipts
         ]
