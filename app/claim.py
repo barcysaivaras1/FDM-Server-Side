@@ -571,6 +571,60 @@ def submit_draft_as_real(claim_id):
         return jsonify({'error': 'Claim already submitted'}), 401
     #
 
+
+    attributes_missing = []
+    def get_attribute(attribute_name, alternativeValue=None):
+        if request.form.get(attribute_name) is None or request.form.get(attribute_name) == "null":
+            attributes_missing.append(attribute_name)
+        return request.form.get(attribute_name, alternativeValue)
+    #
+
+    title = get_attribute("title")
+    amount = get_attribute("amount")
+    currency = get_attribute("currency")
+    expensetype = get_attribute("type")
+    date = get_attribute("date")
+    description = get_attribute("description")
+    multiple_images = request.files.getlist("images[]")
+
+
+    claim = Claim.query.filter_by(id=claim_id).first()
+    if claim is None:
+        return jsonify({'error': 'Claim not found'}), 404
+    #
+    if claim.user_id != current_user.id:
+        return jsonify({'error': 'Unauthorised'}), 401
+    #
+
+    oldTitle = None
+    if title is not None:
+        oldTitle = claim.title
+        claim.title = title
+    #
+    claim.description = description
+    claim.amount = amount
+    claim.currency = currency
+    claim.expensetype = expensetype
+    current_date = datetime.now()
+    if date is None:
+        claim.date = str(current_date)
+    else:
+        claim.date = date
+    #
+
+    """
+    We delete all receipts/images, because client edits which receipts they have.
+    They'd re-submit the images they want to keep.
+    """
+    # remove all receipts first
+    for receipt in claim.receipts:
+        db.session.delete(receipt)
+    #
+    if len(multiple_images) > 0:
+        # then save again
+        save_imageFiles_for_claim(multiple_images, claim)
+    #
+
     claim.status = ClaimStatus.PENDING
     db.session.commit()
     return jsonify({
