@@ -487,6 +487,8 @@ def edit_draft(claim_id):
     expensetype = get_attribute("type")
     date = get_attribute("date")
     description = get_attribute("description")
+    multiple_images = request.files.getlist("images[]")
+
 
     claim = Claim.query.filter_by(id=claim_id).first()
     if claim is None:
@@ -511,6 +513,23 @@ def edit_draft(claim_id):
     else:
         claim.date = date
     #
+
+    """
+    We delete all receipts/images, because client edits which receipts they have.
+    They'd re-submit the images they want to keep.
+    """
+    # remove all receipts first
+    for receipt in claim.receipts:
+        db.session.delete(receipt)
+    #
+    if len(multiple_images) > 0:
+        # then save again
+        save_imageFiles_for_claim(multiple_images, claim)
+    #
+    
+
+
+
 
     # if description is not None:
     #     claim.description = description
