@@ -66,6 +66,64 @@ def get_information_about_claim(claim_instance):
 #
 
 
+"""
+Image File Saving routine
+"""
+
+def save_imageFiles_for_claim(multiple_images, claimInstance: Claim):
+    """
+    # save_imageFiles_for_claim(multiple_images, claimInstance: Claim)
+    : multiple_images: List of FileStorage instances
+    : claimInstance: Claim instance
+
+    ### This will automatically commit to the database the new Receipt instances.
+    """
+    for imageFile in multiple_images:
+        original_filename = secure_filename(imageFile.filename)
+        receipt_filename = f"claim-{claimInstance.id}_receipt-{len(claimInstance.receipts) + 1}_{original_filename}"
+
+        # check the folder to see if there is a folder named "claim{id}"
+        #  if not exists, create it
+        #  save the image to the folder
+
+        path_claimIdFolder = Path(GLOB_FOLDERNAME_RECEIPT_IMAGES + f"claim-{claimInstance.id}")
+        # check this folder exists
+        if not path_claimIdFolder.exists() or not path_claimIdFolder.is_dir():
+            path_claimIdFolder.mkdir()
+        #
+
+        # save the image to the folder
+        # the below division-operator is a macro on Path instance which joins the string to said Path
+        #  not actually dividing by a string, that'd be stupid.
+        pathToSaveImageFileAt = path_claimIdFolder / receipt_filename
+        try:
+            print(pathToSaveImageFileAt)
+            imageFile.save(pathToSaveImageFileAt)
+            str_pathToSaveImageFileAt = str(pathToSaveImageFileAt)
+            print(f"Image saved at: {str_pathToSaveImageFileAt}")
+        except Exception as e:
+            print(e)
+            continue
+        #
+
+        # return jsonify({
+        #     "message": "[DEV TEST: Create Claim] Received FormData, made folder if not there, and print file path.",
+        #     "id": None
+        # }), 200
+
+        new_receipt = Receipt(title=claimInstance.title, image_uri=str_pathToSaveImageFileAt, claim_id=claimInstance.id)
+        claimInstance.receipts.append(new_receipt)
+        db.session.add(new_receipt)
+        db.session.commit()
+    #
+"""
+end Image File Saving routine
+"""
+
+
+
+
+
 @bp.route('/', methods=["GET", "POST"])
 @login_required
 def get_claims():
@@ -112,44 +170,7 @@ def get_claims():
         db.session.add(new_claim)
         db.session.commit()
         
-        for imageFile in multiple_images:
-            original_filename = secure_filename(imageFile.filename)
-            receipt_filename = f"claim-{new_claim.id}_receipt-{len(new_claim.receipts) + 1}_{original_filename}"
-
-            # check the folder to see if there is a folder named "claim{id}"
-            #  if not exists, create it
-            #  save the image to the folder
-
-            path_claimIdFolder = Path(GLOB_FOLDERNAME_RECEIPT_IMAGES + f"claim-{new_claim.id}")
-            # check this folder exists
-            if not path_claimIdFolder.exists() or not path_claimIdFolder.is_dir():
-                path_claimIdFolder.mkdir()
-            #
-
-            # save the image to the folder
-            # the below division-operator is a macro on Path instance which joins the string to said Path
-            #  not actually dividing by a string, that'd be stupid.
-            pathToSaveImageFileAt = path_claimIdFolder / receipt_filename
-            try:
-                print(pathToSaveImageFileAt)
-                imageFile.save(pathToSaveImageFileAt)
-                str_pathToSaveImageFileAt = str(pathToSaveImageFileAt)
-                print(f"Image saved at: {str_pathToSaveImageFileAt}")
-            except Exception as e:
-                print(e)
-                continue
-            #
-
-            # return jsonify({
-            #     "message": "[DEV TEST: Create Claim] Received FormData, made folder if not there, and print file path.",
-            #     "id": None
-            # }), 200
-
-            new_receipt = Receipt(title=title, image_uri=str_pathToSaveImageFileAt, claim_id=new_claim.id)
-            new_claim.receipts.append(new_receipt)
-            db.session.add(new_receipt)
-            db.session.commit()
-        #
+        save_imageFiles_for_claim(multiple_images, new_claim)
         
         return jsonify({
             "message": "Claim created successfully",
@@ -402,9 +423,9 @@ def get_drafts():
 def make_draft():
     attributes_missing = []
     def get_attribute(attribute_name, alternativeValue=None):
-        if request.json.get(attribute_name) is None:
+        if request.form.get(attribute_name) is None:
             attributes_missing.append(attribute_name)
-        return request.json.get(attribute_name, alternativeValue)
+        return request.form.get(attribute_name, alternativeValue)
     #
 
     title = get_attribute("title")
@@ -415,17 +436,24 @@ def make_draft():
         }), 400
     #
 
-    amount = get_attribute("amount", -1)
-    currency = get_attribute("currency", "ABCD")
-    expensetype = get_attribute("type", "Unknown")
-    current_date = datetime.now()
-    date = get_attribute("date", str(current_date))
-    description = get_attribute("description", "Unknown")
+    amount = get_attribute("amount", None)
+    currency = get_attribute("currency", None)
+    expensetype = get_attribute("type", None)
+    date = get_attribute("date", None)
+    description = get_attribute("description", None)
+    multiple_images = request.files.getlist("images[]")
+
+    if len(multiple_images) == 0:
+        warningMessage = "[Warn] No images were provided."
+        attributes_missing.append(warningMessage)
+    #
 
     new_claim = Claim(title=title, description=description, amount=amount, currency=currency,
                       expensetype=expensetype, date=date, status=ClaimStatus.DRAFT, user_id=current_user.id)
     db.session.add(new_claim)
     db.session.commit()
+
+    save_imageFiles_for_claim(multiple_images, new_claim)
 
     messageText = "Draft-claim created successfully!"
     if len(attributes_missing) > 0:
@@ -510,6 +538,17 @@ def delete_draft(claim_id):
     }), 200
 #
 
-
+@bp.route("/drafts/everything", methods=["DELETE"])
+@login_required
+def delete_all_drafts():
+    drafts = Claim.query.filter_by(user_id=current_user.id, status=ClaimStatus.DRAFT).all()
+    for draft in drafts:
+        db.session.delete(draft)
+    #
+    db.session.commit()
+    return jsonify({
+        "message": "All drafts deleted."
+    }), 200
+#
 
 # End of File
