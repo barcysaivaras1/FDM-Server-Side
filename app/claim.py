@@ -431,6 +431,8 @@ def make_draft():
     def get_attribute(attribute_name, alternativeValue=None):
         if request.form.get(attribute_name) is None or request.form.get(attribute_name) == "null":
             attributes_missing.append(attribute_name)
+        if request.form.get(attribute_name) == "null":
+            return alternativeValue
         return request.form.get(attribute_name, alternativeValue)
     #
 
@@ -442,7 +444,7 @@ def make_draft():
         }), 400
     #
 
-    amount = get_attribute("amount", None)
+    amount = get_attribute("amount", 0)
     currency = get_attribute("currency", None)
     expensetype = get_attribute("type", None)
     current_date = datetime.now()
