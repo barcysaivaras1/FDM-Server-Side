@@ -557,6 +557,28 @@ def edit_draft(claim_id):
     }), 200
 #
 
+@bp.route("/drafts/<int:claim_id>/submit", methods=["POST"])
+@login_required
+def submit_draft_as_real(claim_id):
+    claim = Claim.query.filter_by(id=claim_id).first()
+    if claim is None:
+        return jsonify({'error': 'Claim not found'}), 404
+    #
+    if claim.user_id != current_user.id:
+        return jsonify({'error': 'Unauthorised'}), 401
+    #
+    if claim.status != ClaimStatus.DRAFT:
+        return jsonify({'error': 'Claim already submitted'}), 401
+    #
+
+    claim.status = ClaimStatus.PENDING
+    db.session.commit()
+    return jsonify({
+        "message": "Claim submitted. (Draft ➡ Pending)",
+        "id": claim_id
+    }), 200
+#
+
 @bp.route("/drafts/<int:claim_id>", methods=["DELETE"])
 @login_required
 def delete_draft(claim_id):
