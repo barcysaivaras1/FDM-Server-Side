@@ -81,9 +81,6 @@ def change_password():
     if check_password_hash(current_user.password, new_password):
         return jsonify({'error': 'New password same as old password'}), 500
 
-    # temporary, for development
-    new_password = "password"
-
     current_user.password = generate_password_hash(new_password)
     db.session.commit()
     return jsonify({'message': 'Successfully changed password'}), 200
